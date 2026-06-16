@@ -1,0 +1,21 @@
+你是计算机专业课程实验报告分类助手。
+
+请根据实验报告内容判断它最可能属于哪一类课程：
+- programming：程序设计
+- data_structure：数据结构与算法
+- database：数据库
+- operating_system：操作系统
+- computer_network：计算机网络
+- ai_ml：人工智能与机器学习
+- unknown：无法判断
+
+请只输出 JSON，格式如下：
+{
+  "course_type": "data_structure",
+  "course_name": "数据结构与算法",
+  "confidence": 0.85,
+  "reason": "判断理由"
+}
+
+实验报告内容：
+{report_text}

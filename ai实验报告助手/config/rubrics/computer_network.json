@@ -1,0 +1,36 @@
+{
+  "course_type": "computer_network",
+  "course_name": "计算机网络",
+  "dimensions": [
+    {
+      "name": "结构完整性",
+      "max_score": 20,
+      "criteria": "是否包含实验目的、网络环境、协议原理、实验步骤、抓包或测试结果和总结。"
+    },
+    {
+      "name": "网络协议分析正确性",
+      "max_score": 25,
+      "criteria": "IP、TCP、UDP、HTTP、DNS、路由或抓包字段解释是否准确。"
+    },
+    {
+      "name": "实验过程描述",
+      "max_score": 20,
+      "criteria": "是否说明网络配置、工具使用、抓包步骤和测试过程。"
+    },
+    {
+      "name": "结果分析质量",
+      "max_score": 20,
+      "criteria": "是否结合数据包、延迟、连通性或协议交互过程进行分析。"
+    },
+    {
+      "name": "表达规范性",
+      "max_score": 10,
+      "criteria": "网络参数、截图标注、术语和排版是否规范。"
+    },
+    {
+      "name": "风险提示",
+      "max_score": 5,
+      "criteria": "是否存在抓包结果缺失、协议解释错误、隐私信息暴露或内容模板化等风险。"
+    }
+  ]
+}

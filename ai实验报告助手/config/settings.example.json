@@ -1,0 +1,13 @@
+{
+  "llm": {
+    "provider": "openai_compatible",
+    "base_url": "https://api.example.com/v1",
+    "api_key": "YOUR_API_KEY_HERE",
+    "model": "your-model-name"
+  },
+  "app": {
+    "default_course_type": "auto",
+    "max_report_chars": 20000,
+    "output_dir": "outputs"
+  }
+}

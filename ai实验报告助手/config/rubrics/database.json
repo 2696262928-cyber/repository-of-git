@@ -1,0 +1,36 @@
+{
+  "course_type": "database",
+  "course_name": "数据库",
+  "dimensions": [
+    {
+      "name": "结构完整性",
+      "max_score": 20,
+      "criteria": "是否包含实验目的、数据库环境、表结构、SQL 语句、执行结果和总结。"
+    },
+    {
+      "name": "数据库设计与 SQL 正确性",
+      "max_score": 25,
+      "criteria": "表结构、约束、查询、事务、索引或视图设计是否合理，SQL 是否符合实验目标。"
+    },
+    {
+      "name": "实验过程描述",
+      "max_score": 20,
+      "criteria": "是否说明建表、插入数据、查询验证和调试过程。"
+    },
+    {
+      "name": "结果分析质量",
+      "max_score": 20,
+      "criteria": "是否解释 SQL 执行结果、数据关系和异常情况。"
+    },
+    {
+      "name": "表达规范性",
+      "max_score": 10,
+      "criteria": "表格、SQL 代码和截图说明是否清晰规范。"
+    },
+    {
+      "name": "风险提示",
+      "max_score": 5,
+      "criteria": "是否存在结果缺失、SQL 与任务不匹配、引用缺失或内容过于模板化等风险。"
+    }
+  ]
+}
