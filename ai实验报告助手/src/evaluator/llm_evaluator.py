@@ -8,13 +8,20 @@ class LLMEvaluationError(RuntimeError):
     pass
 
 
-def evaluate_with_openai_compatible_api(report_text: str, rubric: dict, settings: dict, prompt_template: str) -> dict:
+def evaluate_with_openai_compatible_api(
+    report_text: str,
+    rubric: dict,
+    settings: dict,
+    prompt_template: str,
+    diagnostics: dict | None = None,
+) -> dict:
     """Call an OpenAI-compatible chat completion API and return parsed JSON."""
     _validate_settings(settings)
     prompt = (
         prompt_template
         .replace("{report_text}", report_text)
         .replace("{rubric}", json.dumps(rubric, ensure_ascii=False, indent=2))
+        .replace("{diagnostics}", json.dumps(diagnostics or {}, ensure_ascii=False, indent=2))
     )
     llm_settings = settings["llm"]
     try:
@@ -32,7 +39,7 @@ def evaluate_with_openai_compatible_api(report_text: str, rubric: dict, settings
                 ],
                 "temperature": 0.2,
             },
-            timeout=90,
+            timeout=(30, 300),  # (connect_timeout, read_timeout) 连接30s，读取300s
         )
         response.raise_for_status()
     except requests.RequestException as exc:

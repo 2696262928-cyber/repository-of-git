@@ -16,6 +16,9 @@
 评分标准：
 {rubric}
 
+系统预检诊断：
+{diagnostics}
+
 请输出以下 JSON 结构：
 {
   "summary": "整体评价",

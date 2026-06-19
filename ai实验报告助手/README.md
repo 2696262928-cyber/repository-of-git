@@ -1,129 +1,102 @@
 # 面向计算机类课程的实验报告智能检测与反馈系统
 
-本项目是《人工智能导论》期末大作业项目骨架，目标是实现一个面向计算机类课程实验报告的智能检测与反馈系统。系统支持上传实验报告，自动解析内容，识别课程类型，并结合评分规则与大语言模型输出结构化评分、问题定位、修改建议和教师评语。
+上传实验报告 → 自动解析文档、智能凝练文本、识别图片内容（波形图/表格/代码截图）→ 大模型评阅 → 输出评分、问题和修改建议。
 
-## 项目定位
+---
 
-本系统不是代写实验报告，而是用于辅助学生自查和教师评阅。核心场景包括：
+## 朋友拉取后如何运行
 
-- 程序设计实验报告检测
-- 数据结构与算法实验报告检测
-- 数据库实验报告检测
-- 操作系统实验报告检测
-- 计算机网络实验报告检测
-- 人工智能与机器学习实验报告检测
+### 前提：电脑已安装 Python 3.10+
 
-## 核心流程
+没有的话去 https://www.python.org/downloads/ 下载，安装时勾选 **Add Python to PATH**。
 
-```text
-上传实验报告
--> 解析报告文本、表格和代码片段
--> 识别课程/实验类型
--> 匹配课程评分 Rubric
--> 调用大语言模型分析
--> 输出评分、问题、建议和教师评语
--> 导出检测报告
+### 三步启动
+
+```bash
+# 1. 进入项目目录
+cd ai实验报告助手
+
+# 2. 一键配置环境（自动创建虚拟环境、安装所有依赖）
+python setup_env.py
+
+# 3. 启动系统
+.venv\Scripts\streamlit.exe run app.py
 ```
 
-## 技术栈建议
+浏览器会自动打开 `http://localhost:8501`。
 
-- 前端界面：Streamlit
-- 后端语言：Python
-- 文档解析：python-docx、PyMuPDF
-- 大模型接入：DeepSeek / Qwen / OpenAI-compatible API / Ollama
-- 评分规则：JSON Rubric
-- 检测结果导出：Markdown，后续可扩展 DOCX / PDF
+> 如果第 2 步报错，也可以手动执行：
+> ```bash
+> python -m venv .venv
+> .venv\Scripts\python.exe -m pip install -r requirements.txt
+> copy config\settings.example.json config\settings.json
+> ```
+
+### 使用大模型评阅
+
+编辑 `config\settings.json`，把 `api_key` 改成你的 DeepSeek API Key：
+
+```json
+{
+  "llm": {
+    "base_url": "https://api.deepseek.com/v1",
+    "api_key": "你的真实API Key",
+    "model": "deepseek-chat"
+  }
+}
+```
+
+不填 API Key 也能用，系统会用规则引擎给出基础评分。
+
+---
+
+## 功能概览
+
+| 模块 | 能力 |
+|------|------|
+| 文档解析 | 支持 DOCX / PDF / TXT / Markdown，提取文本、表格、代码块 |
+| 智能凝练 | 保留章节/代码/技术参数，压缩描述性文字，减少 LLM 调用时间 |
+| 图片分析 | OpenCV 分类图片类型（波形图/表格/代码截图/电路图），评估质量 |
+| 图片内容提取 | 表格 OCR、波形信号检测、代码截图逐行识别 |
+| 图片位置关联 | 每张图片标注所在页码和章节，交叉验证图片类型与位置是否匹配 |
+| 进度可视化 | 上传后展示实时分析流水线（文档解析→文本凝练→图片分析→位置关联→融合） |
+| 课程识别 | 自动识别程序设计/数据结构/数据库/操作系统/计网/AI/嵌入式等课程 |
+| LLM 评阅 | 调用 DeepSeek API 输出分项评分、问题定位、修改建议、教师评语 |
+| 结果导出 | 下载 Markdown 格式检测报告 |
+
+---
 
 ## 目录结构
 
 ```text
 .
-├─ app.py                         # Streamlit 主入口
-├─ requirements.txt               # Python 依赖
-├─ config/
-│  ├─ settings.example.json        # 配置示例
-│  └─ rubrics/                     # 课程评分规则
-├─ data/
-│  ├─ knowledge_base/              # 课程资料、报告模板、常见问题
-│  └─ samples/                     # 测试样例
-├─ docs/
-│  ├─ 项目设计说明.md
-│  ├─ 成员分工.md
-│  └─ 测试用例.md
-├─ prompts/                        # 大模型 Prompt 模板
-├─ outputs/                        # 检测结果导出目录
-├─ src/
-│  ├─ classifier/                  # 课程类型识别
-│  ├─ evaluator/                   # 评分与 LLM 检测
-│  ├─ exporter/                    # 结果导出
-│  ├─ parser/                      # 报告解析
-│  └─ utils/                       # 通用工具
-└─ tests/                          # 测试代码
+├── app.py                           # Streamlit 主入口
+├── requirements.txt                 # Python 依赖
+├── setup_env.py                     # 一键环境配置脚本
+├── start_app.bat                    # 双击启动
+├── config/
+│   ├── settings.example.json        # 配置模板
+│   ├── settings.json                # 本地配置（含 API Key，已在 .gitignore）
+│   └── rubrics/                     # 课程评分规则 JSON
+├── prompts/
+│   └── report_review_prompt.txt     # LLM 评阅 Prompt
+├── data/
+│   └── samples/                     # 测试样例
+├── src/
+│   ├── analyzer/                    # 分析流水线（文本凝练、并行管道、融合）
+│   ├── classifier/                  # 课程类型识别
+│   ├── evaluator/                   # 评分、LLM 调用、报告诊断
+│   ├── exporter/                    # 结果导出
+│   ├── parser/                      # 文档解析、OCR、图片上下文提取
+│   ├── vision/                      # OpenCV 图像处理与内容提取
+│   └── utils/                       # 配置加载
+└── outputs/                         # 导出目录
 ```
 
-## 快速开始
-
-1. 创建并激活 Python 虚拟环境。
-
-```bash
-python -m venv .venv
-.venv\Scripts\activate
-```
-
-2. 安装依赖。
-
-```bash
-pip install -r requirements.txt
-```
-
-3. 复制配置文件。
-
-```bash
-copy config\settings.example.json config\settings.json
-```
-
-4. 修改 `config/settings.json` 中的模型 API 配置。
-
-5. 启动系统。
-
-```bash
-streamlit run app.py
-```
-
-## 最小可交付功能
-
-- 上传 DOCX / PDF / TXT / Markdown 实验报告
-- 提取报告正文
-- 手动选择或自动识别课程类型
-- 读取对应课程评分 Rubric
-- 调用 LLM 输出评分和反馈
-- 页面展示检测结果
-- 导出 Markdown 检测报告
-
-## 协作建议
-
-建议使用以下分支：
-
-- `main`：稳定版本
-- `dev`：开发整合版本
-- `feature/parser`：文档解析
-- `feature/frontend`：页面界面
-- `feature/llm`：模型接入
-- `feature/rubric`：评分规则
-- `feature/export`：检测报告导出
-
-提交信息示例：
-
-```text
-feat: add docx parser
-feat: add rubric loader
-fix: handle empty pdf content
-docs: update test cases
-```
+---
 
 ## 注意事项
 
-- 不要提交真实 API Key。
-- 不要提交包含隐私信息的学生报告。
-- 外部 API 使用情况需要在最终报告中声明。
-- 检测结果应表述为辅助评阅建议，不应声称能够绝对判定抄袭或 AI 生成。
+- **不要提交 `config/settings.json`**（已在 .gitignore 中排除），里面包含 API Key
+- 不要提交含隐私信息的学生报告
+- 检测结果为辅助评阅建议，不声称能绝对判定抄袭或 AI 生成

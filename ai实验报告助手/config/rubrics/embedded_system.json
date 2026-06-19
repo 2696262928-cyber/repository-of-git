@@ -1,0 +1,36 @@
+{
+  "course_type": "embedded_system",
+  "course_name": "嵌入式系统",
+  "dimensions": [
+    {
+      "name": "实验任务覆盖度",
+      "max_score": 15,
+      "criteria": "是否逐项回应实验 Objective 与 Requirements，是否覆盖 UART/SPI/DMA/ADC/PWM/GPIO/外设控制等任务要求。"
+    },
+    {
+      "name": "硬件与外设配置正确性",
+      "max_score": 20,
+      "criteria": "是否清楚说明 CubeMX/寄存器/定时器/中断/DMA/GPIO/ADC/PWM/SPI/UART 等配置，关键参数是否合理。"
+    },
+    {
+      "name": "程序实现与代码说明",
+      "max_score": 20,
+      "criteria": "是否解释关键函数、回调、中断、缓冲区、状态变量和控制流程，代码修改是否能支撑实验功能。"
+    },
+    {
+      "name": "实验过程与调试记录",
+      "max_score": 15,
+      "criteria": "是否描述实现步骤、遇到的问题、冲突解决、调试方法和迭代过程，而不是只罗列最终结果。"
+    },
+    {
+      "name": "结果验证与现象分析",
+      "max_score": 20,
+      "criteria": "是否提供测试流程、串口/OLED/电机/波形/截图等结果证据，并分析结果与实验要求是否一致。"
+    },
+    {
+      "name": "报告规范与表达",
+      "max_score": 10,
+      "criteria": "结构是否清晰，图文是否对应，英文/中文术语是否准确，是否包含总结、参考资料和必要说明。"
+    }
+  ]
+}

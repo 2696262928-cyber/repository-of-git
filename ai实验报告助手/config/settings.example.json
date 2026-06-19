@@ -7,7 +7,14 @@
   },
   "app": {
     "default_course_type": "auto",
-    "max_report_chars": 20000,
-    "output_dir": "outputs"
+    "max_report_chars": 8000,
+    "output_dir": "outputs",
+    "ocr_max_pages": 5
+  },
+  "vision": {
+    "ocr_preprocessing": true,
+    "deskew_enabled": true,
+    "image_analysis_enabled": true,
+    "quality_threshold": 100.0
   }
 }

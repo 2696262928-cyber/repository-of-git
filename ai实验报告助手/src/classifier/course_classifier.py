@@ -23,6 +23,10 @@ COURSE_KEYWORDS = {
         "course_name": "人工智能与机器学习",
         "keywords": ["knn", "神经网络", "训练集", "测试集", "准确率", "损失", "模型", "分类"],
     },
+    "embedded_system": {
+        "course_name": "嵌入式系统",
+        "keywords": ["uart", "spi", "dma", "adc", "pwm", "gpio", "timer", "oled", "w25q128", "flash", "cubemx", "hal_"],
+    },
 }
 
 
