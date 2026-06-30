@@ -8,3 +8,5 @@ pandas>=2.2.0
 pillow>=10.0.0
 rapidocr-onnxruntime>=1.2.3
 numpy>=1.24.0
+opencv-python-headless>=4.8.0
+pytest>=8.0.0

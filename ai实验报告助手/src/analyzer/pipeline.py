@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 from typing import Callable
 
 from src.analyzer.text_condenser import CondensationResult, condense_report_text, extract_key_parameters
-from src.evaluator.report_analyzer import analyze_report_quality
+from src.evaluator.report_analyzer import analyze_report_quality, apply_image_precheck_penalties
 from src.parser.document_parser import (
     ImageContext,
     ParsedReport,
@@ -153,6 +153,7 @@ def run_analysis_pipeline(
 
     # ── 组装结果 ──
     diagnostics = analyze_report_quality(parsed, image_bytes_list=None)
+    diagnostics = apply_image_precheck_penalties(diagnostics, img_results)
 
     # 将融合后的图片结论注入 diagnostics
     diagnostics["image_findings"] = _build_image_findings_from_contexts(img_results, contexts)

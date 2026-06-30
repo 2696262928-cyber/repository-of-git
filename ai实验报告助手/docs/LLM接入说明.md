@@ -32,6 +32,15 @@ copy config\settings.example.json config\settings.json
 }
 ```
 
+如果不希望把 API Key 写入文件，也可以只在 `config/settings.json` 中保留 `base_url` 和 `model`，然后在启动前设置环境变量：
+
+```powershell
+$env:DEEPSEEK_API_KEY="你的 API Key"
+.\.venv\Scripts\streamlit.exe run app.py
+```
+
+程序会优先使用 `config/settings.json` 中的非占位 Key；如果仍是 `YOUR_API_KEY_HERE`，则自动读取 `DEEPSEEK_API_KEY` 或 `OPENAI_API_KEY`。
+
 常见配置示例：
 
 | 平台 | base_url 示例 | model 示例 |
@@ -53,10 +62,27 @@ copy config\settings.example.json config\settings.json
 
 1. 上传实验报告。
 2. 选择课程类型或保持自动识别。
-3. 勾选“启用大模型评阅”。
-4. 点击“开始检测”。
+3. 在主页面选择任务模式，并按需要填写“我的需求 / 问题 / 关注点”。
+4. 勾选“启用大模型评阅”；如需课程知识依据，可同时勾选“启用本地知识库 RAG”。
+5. 点击“开始检测”。
 
-## 四、常见错误
+## 四、多任务 Prompt 调用说明
+
+当前所有大模型任务都走同一个 OpenAI-compatible Chat Completions 接口，但会根据任务模式选择不同 Prompt 模板：
+
+| 任务模式 | Prompt 文件 | 说明 |
+| --- | --- | --- |
+| 全面评阅 | `prompts/report_review_prompt.txt` | 生成总分、分项评分、问题建议和教师评语 |
+| 按需求重点检查 | `prompts/focused_review_prompt.txt` | 围绕用户输入的关注点重点检查 |
+| 基于报告问答 | `prompts/report_qa_prompt.txt` | 基于报告内容和 RAG 片段回答用户问题 |
+| 生成修改计划 | `prompts/revision_plan_prompt.txt` | 输出按优先级排列的修改清单 |
+| 生成教师评语 | `prompts/teacher_comment_prompt.txt` | 生成适合教师批改场景的评语草稿 |
+
+用户输入会同时进入 Prompt 和 RAG 检索 query。系统要求模型返回合法 JSON，并根据不同任务校验必要字段。非全面评阅任务依赖大模型生成；如果关闭大模型，系统只能输出规则检测的基础评分，不能完整生成问答、修改计划或教师评语。
+
+API Key 只应保存在本地 `config/settings.json` 或环境变量中，不要写入代码、文档、截图或提交记录。
+
+## 五、常见错误
 
 ### 1. 缺少 API Key
 

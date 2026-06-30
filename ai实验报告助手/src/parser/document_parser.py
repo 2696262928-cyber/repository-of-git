@@ -175,6 +175,7 @@ def _extract_pdf_images_with_context(content: bytes) -> list[ImageContext]:
 def _extract_docx_images_with_context(content: bytes) -> list[ImageContext]:
     """从 DOCX 中提取图片及其上下文（段落位置）。"""
     results = []
+    tmp_path = None
     try:
         with NamedTemporaryFile(suffix=".docx", delete=False) as tmp:
             tmp.write(content)
@@ -208,6 +209,9 @@ def _extract_docx_images_with_context(content: bytes) -> list[ImageContext]:
                 ))
     except Exception:
         pass
+    finally:
+        if tmp_path:
+            Path(tmp_path).unlink(missing_ok=True)
     return results
 
 
@@ -238,23 +242,28 @@ def _find_nearest_section(text: str) -> str:
 
 
 def _parse_docx(content: bytes) -> tuple[str, list[str], int, int]:
+    tmp_path = None
     with NamedTemporaryFile(suffix=".docx", delete=False) as tmp:
         tmp.write(content)
         tmp_path = tmp.name
 
-    document = Document(tmp_path)
-    paragraphs = [p.text.strip() for p in document.paragraphs if p.text.strip()]
+    try:
+        document = Document(tmp_path)
+        paragraphs = [p.text.strip() for p in document.paragraphs if p.text.strip()]
 
-    tables = []
-    for table in document.tables:
-        rows = []
-        for row in table.rows:
-            cells = [" ".join(cell.text.split()) for cell in row.cells]
-            rows.append(" | ".join(cells))
-        tables.append("\n".join(rows))
+        tables = []
+        for table in document.tables:
+            rows = []
+            for row in table.rows:
+                cells = [" ".join(cell.text.split()) for cell in row.cells]
+                rows.append(" | ".join(cells))
+            tables.append("\n".join(rows))
 
-    text_parts = paragraphs + tables
-    return "\n\n".join(text_parts), tables, 0, len(document.inline_shapes)
+        text_parts = paragraphs + tables
+        return "\n\n".join(text_parts), tables, 0, len(document.inline_shapes)
+    finally:
+        if tmp_path:
+            Path(tmp_path).unlink(missing_ok=True)
 
 
 def _parse_pdf(content: bytes) -> tuple[str, int, int]:

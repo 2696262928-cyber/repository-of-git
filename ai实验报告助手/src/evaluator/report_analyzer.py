@@ -117,10 +117,11 @@ def analyze_report_quality(
     vision_settings = _load_vision_settings()
     extracted_image_text = ""
     if vision_settings.get("image_analysis_enabled", True) and image_bytes_list:
-        extracted_image_text = _analyze_images(
-            image_bytes_list, image_findings, vision_settings, score, notes,
+        extracted_image_text, image_penalty = _analyze_images(
+            image_bytes_list, image_findings, vision_settings, notes,
             extract_content=extract_content,
         )
+        score -= image_penalty
     else:
         _fallback_image_findings(parsed_report, image_findings)
 
@@ -171,10 +172,9 @@ def _analyze_images(
     image_bytes_list: list[bytes],
     image_findings: list[str],
     vision_settings: dict,
-    score: int,
     notes: list[str],
     extract_content: bool = False,
-) -> str:
+) -> tuple[str, int]:
     """使用 OpenCV 对图片进行内容分类、质量评估与内容提取，将结果写入 image_findings。
 
     Args:
@@ -182,10 +182,11 @@ def _analyze_images(
                          默认 False，仅做分类和质量检测。
 
     Returns:
-        str — 从代码截图/文本扫描中提取的文本，可供合并到报告正文。
+        tuple[str, int] — 图片提取文本和预检扣分。
     """
     image_findings.append(f"检测到图片对象：{len(image_bytes_list)} 个。")
     accumulated_text = ""
+    score_penalty = 0
 
     try:
         from src.vision.image_processor import (
@@ -265,13 +266,13 @@ def _analyze_images(
         # 根据图片分析调整预检评分
         if code_screenshot_count > 0:
             penalty = min(12, code_screenshot_count * 4)
-            score -= penalty
+            score_penalty += penalty
             notes.append(f"检测到 {code_screenshot_count} 张代码/文本截图 — "
                          "代码应以文字形式提交，截图中的代码无法被分析。建议补充文字版代码。")
 
         if blurry_count > 0:
             penalty = min(8, blurry_count * 2)
-            score -= penalty
+            score_penalty += penalty
             notes.append(f"检测到 {blurry_count} 张图片质量偏低（模糊/低对比度），"
                          "可能影响 OCR 准确率，建议重新上传清晰图片。")
 
@@ -293,7 +294,7 @@ def _analyze_images(
     except Exception as exc:
         image_findings.append(f"图片分析失败：{exc}，已回退到基础统计。")
 
-    return accumulated_text
+    return accumulated_text, score_penalty
 
 
 def _fallback_image_findings(parsed_report, image_findings: list[str]) -> None:
@@ -304,3 +305,61 @@ def _fallback_image_findings(parsed_report, image_findings: list[str]) -> None:
         image_findings.append("若实验结果主要体现在截图中，建议报告正文配套写出关键结果说明，便于模型评阅。")
     elif parsed_report.file_type in {"pdf", "docx"}:
         image_findings.append("未检测到图片对象；如果原报告包含截图，可能是以背景/矢量/扫描页面形式存在。")
+
+
+def apply_image_precheck_penalties(diagnostics: dict, image_results: list) -> dict:
+    """Apply score penalties from already-computed image analysis results."""
+    if not image_results:
+        return diagnostics
+
+    try:
+        from src.vision.image_processor import ImageLabel
+    except ImportError:
+        return diagnostics
+
+    code_screenshot_count = sum(1 for item in image_results if item.content_type.label == ImageLabel.CODE_SCREENSHOT)
+    blurry_count = sum(1 for item in image_results if item.quality.is_blurry)
+    waveform_count = sum(1 for item in image_results if item.content_type.label == ImageLabel.WAVEFORM)
+    circuit_count = sum(1 for item in image_results if item.content_type.label == ImageLabel.CIRCUIT_DIAGRAM)
+    empty_waveform_count = sum(
+        1 for item in image_results
+        if item.waveform_content is not None and not item.waveform_content.has_signal
+    )
+
+    penalty = 0
+    notes = diagnostics.setdefault("precheck_notes", [])
+    if code_screenshot_count > 0:
+        penalty += min(12, code_screenshot_count * 4)
+        _append_unique_note(
+            notes,
+            f"检测到 {code_screenshot_count} 张代码/文本截图 — 代码应以文字形式提交，截图中的代码无法被分析。建议补充文字版代码。",
+        )
+    if blurry_count > 0:
+        penalty += min(8, blurry_count * 2)
+        _append_unique_note(
+            notes,
+            f"检测到 {blurry_count} 张图片质量偏低（模糊/低对比度），可能影响 OCR 准确率，建议重新上传清晰图片。",
+        )
+    if waveform_count > 0:
+        _append_unique_note(
+            notes,
+            f"检测到 {waveform_count} 张波形图 — 建议在正文中用文字描述关键波形参数（周期、频率、占空比、幅值等）。",
+        )
+    if empty_waveform_count > 0:
+        _append_unique_note(
+            notes,
+            f"其中 {empty_waveform_count} 张波形图疑似空白坐标系/无信号数据 — 请确认是否误放截图或补充实际测量波形。",
+        )
+    if circuit_count > 0:
+        _append_unique_note(
+            notes,
+            f"检测到 {circuit_count} 张电路图/框图 — 建议在正文中说明电路结构与工作原理。",
+        )
+
+    diagnostics["precheck_score"] = max(0, min(100, int(diagnostics.get("precheck_score", 100)) - penalty))
+    return diagnostics
+
+
+def _append_unique_note(notes: list[str], note: str) -> None:
+    if note not in notes:
+        notes.append(note)

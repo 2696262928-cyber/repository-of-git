@@ -23,10 +23,12 @@ Python 依赖已经写入 `requirements.txt`：
 
 ```text
 pillow
-pytesseract
+rapidocr-onnxruntime
+opencv-python-headless
 ```
 
 OCR 默认使用 `rapidocr-onnxruntime`，它可以通过 pip 安装，不需要额外安装系统级 Tesseract 程序。
+OpenCV 用于 OCR 前的图像预处理、纠偏、文本区域检测和图片质量分析。
 
 只要运行：
 
@@ -41,9 +43,10 @@ pip install -r requirements.txt
 - OCR 主要识别图片中的文字，不等于理解波形、电路图、流程图或实验现象。
 - 图片质量差、字体太小、截图模糊时，识别效果会下降。
 - DeepSeek 文本模型只能基于 OCR 出来的文字进行评阅，不能直接看图片。
+- 表格、波形、代码截图等图片内容分析依赖 OpenCV 的规则检测，结果应作为辅助提示。
 
 ## 五、建议写入最终报告
 
 可以将该能力描述为：
 
-> 系统支持 PDF/DOCX 文档的文本解析，并提供可选 OCR 功能，用于读取扫描页或截图中的文字信息。对于波形图、电路图等图像语义内容，当前系统提供页面预览与图片数量检测，尚未进行多模态视觉理解。
+> 系统支持 PDF/DOCX 文档的文本解析，并提供可选 OCR 功能，用于读取扫描页或截图中的文字信息。系统还基于 OpenCV 对表格、波形图、代码截图、电路图等图片类型进行辅助识别和质量提示，但不等同于完整多模态视觉理解。

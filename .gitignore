@@ -1,0 +1,23 @@
+# Python / test caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Local environments
+.venv/
+venv/
+.env
+
+# Local IDE / OS files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Runtime output and local secrets
+*.log
+config/settings.json
+ai实验报告助手/config/settings.json
+ai实验报告助手/outputs/*
+!ai实验报告助手/outputs/.gitkeep
+

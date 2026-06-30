@@ -11,3 +11,4 @@ outputs/*
 .streamlit/secrets.toml
 *.log
 data/samples/*.pdf
+start_app_local.bat
